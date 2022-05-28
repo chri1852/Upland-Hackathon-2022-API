@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Upland_Hackathon_2022_API</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UplandHackathon2022.API.Contracts\UplandHackathon2022.API.Contracts.csproj" />
+    <ProjectReference Include="..\UplandHackathon2022.API.Infrastructure\UplandHackathon2022.API.Infrastructure.csproj" />
+  </ItemGroup>
+
+
+</Project>
