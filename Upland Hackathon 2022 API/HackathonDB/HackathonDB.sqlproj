@@ -76,5 +76,7 @@
     <Build Include="StoredProcedures\UHN.UpsertBattleAsset.sql" />
     <Build Include="Tables\UHN.BattleAssetTraining.sql" />
     <Build Include="StoredProcedures\UHN.UpsertBattleAssetTraining.sql" />
+    <Build Include="Tables\UHN.Battle.sql" />
+    <Build Include="StoredProcedures\UHN.UpsertBattle.sql" />
   </ItemGroup>
 </Project>

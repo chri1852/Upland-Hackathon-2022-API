@@ -45,7 +45,7 @@ namespace Upland_Hackathon_2022_API
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("WebVerified", policy => policy.RequireClaim("WebVerified", true.ToString()));
+                options.AddPolicy("UplandUsername", policy => policy.RequireClaim("UplandUsername"));
             });
 
             services.AddCors(options =>

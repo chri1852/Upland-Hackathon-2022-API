@@ -10,13 +10,11 @@ namespace UplandHackathon2022.API.Contracts.Constants
         public const string NToken = "UplandHackathon2022 (?<token>.*)";
     }
 
-    // TODO: CHANGE THESE
     public class UplandHackathon2022AuthClaimTypes
     {
         public const string UplandUsername = "UplandUsername";
         public const string RegisteredUserId = "RegisteredUserId";
         public const string PasswordHash = "PasswordHash";
-        public const string WebVerified = "WebVerified";
     }
 }
 

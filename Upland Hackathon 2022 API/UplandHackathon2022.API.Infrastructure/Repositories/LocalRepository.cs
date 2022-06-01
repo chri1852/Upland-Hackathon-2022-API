@@ -501,6 +501,7 @@ namespace UplandHackathon2022.API.Infrastructure.Repositories
 
             return battleAsset;
         }
+
         public BattleAsset GetBattleAssetByBattleAssetId(int battleAssetId)
         {
             SqlConnection sqlConnection = GetSQLConnector();
@@ -608,7 +609,7 @@ namespace UplandHackathon2022.API.Infrastructure.Repositories
                     SqlCommand sqlCmd = new SqlCommand();
                     sqlCmd.Connection = sqlConnection;
                     sqlCmd.CommandType = CommandType.Text;
-                    sqlCmd.CommandText = "SELECT TOP(1) Id AS 'COUNT' FROM [UHN].[BattleAssetTraining] (NOLOCK) WHERE Resolved = 0 AND BattleAssetId = " + battleAssetId;
+                    sqlCmd.CommandText = "SELECT TOP(1) Id FROM [UHN].[BattleAssetTraining] (NOLOCK) WHERE Resolved = 0 AND BattleAssetId = " + battleAssetId;
                     using (SqlDataReader reader = sqlCmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -682,7 +683,7 @@ namespace UplandHackathon2022.API.Infrastructure.Repositories
         {
             SqlConnection sqlConnection = GetSQLConnector();
             List<BattleAssetTraining> expiredTrainings = new List<BattleAssetTraining>();
-            string nowUTC = DateTime.UtcNow.ToString("yyyy-MM-dd hh:mm:ss");
+            string nowUTC = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
 
             using (sqlConnection)
             {
@@ -774,6 +775,354 @@ namespace UplandHackathon2022.API.Infrastructure.Repositories
             }
 
             return finishedTrainings;
+        }
+
+        public List<BattleAssetTraining> GetAllApprovedNotFinishedBattleAssetTrainings()
+        {
+            SqlConnection sqlConnection = GetSQLConnector();
+            List<BattleAssetTraining> finishedTrainings = new List<BattleAssetTraining>();
+
+            using (sqlConnection)
+            {
+                sqlConnection.Open();
+
+                try
+                {
+                    SqlCommand sqlCmd = new SqlCommand();
+                    sqlCmd.Connection = sqlConnection;
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.CommandText = "SELECT * FROM [UHN].[BattleAssetTraining] (NOLOCK) WHERE Resolved = 0 AND Accepted = 1";
+                    using (SqlDataReader reader = sqlCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            BattleAssetTraining entry = new BattleAssetTraining();
+
+                            entry.Id = (int)reader["Id"];
+                            entry.BattleAssetId = (int)reader["BattleAssetId"];
+                            entry.ContainerId = (int)reader["ContainerId"];
+                            entry.SkillTraining = (string)reader["SkillTraining"];
+                            entry.FinishedTime = (DateTime)reader["FinishedTime"];
+                            entry.MustAcceptBy = (DateTime)reader["MustAcceptBy"];
+                            entry.UPXFee = (int)reader["UPXFee"];
+                            entry.Resolved = (bool)reader["Resolved"];
+
+                            finishedTrainings.Add(entry);
+                        }
+                        reader.Close();
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                }
+            }
+
+            return finishedTrainings;
+        }
+
+        public int UpsertBattle(Battle battle)
+        {
+            int newId = -1;
+            SqlConnection sqlConnection = GetSQLConnector();
+
+            using (sqlConnection)
+            {
+                sqlConnection.Open();
+
+                try
+                {
+                    SqlCommand sqlCmd = new SqlCommand();
+                    sqlCmd.Connection = sqlConnection;
+                    sqlCmd.CommandType = CommandType.StoredProcedure;
+                    sqlCmd.CommandText = "[UHN].[UpsertBattle]";
+                    sqlCmd.Parameters.Add(new SqlParameter("Id", battle.Id));
+                    sqlCmd.Parameters.Add(new SqlParameter("ContainerId", battle.ContainerId));
+                    sqlCmd.Parameters.Add(new SqlParameter("OpponentBattleAssetId", battle.OpponentBattleAssetId));
+                    sqlCmd.Parameters.Add(AddNullParmaterSafe<int?>("ChallengerBattleAssetId", battle.ChallengerBattleAssetId));
+                    sqlCmd.Parameters.Add(new SqlParameter("UPXPerSide", battle.UPXPerSide));
+                    sqlCmd.Parameters.Add(new SqlParameter("MustBattleBy", battle.MustBattleBy));
+                    sqlCmd.Parameters.Add(new SqlParameter("Resolved", battle.Resolved));
+                    sqlCmd.Parameters.Add(AddNullParmaterSafe<int?>("WinnerBattleAssetId", battle.WinnerBattleAssetId));
+                    sqlCmd.Parameters.Add(new SqlParameter("OpponentSkills", battle.OpponentSkills));
+                    sqlCmd.Parameters.Add(AddNullParmaterSafe<string?>("ChallengerSkills", battle.ChallengerSkills));
+
+                    using (SqlDataReader reader = sqlCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            newId = (int)reader["Id"];
+                        }
+                        reader.Close();
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                }
+            }
+
+            return newId;
+        }
+
+        public List<Battle> GetAllUnresolvedBattles()
+        {
+            SqlConnection sqlConnection = GetSQLConnector();
+            List<Battle> expiredBattles = new List<Battle>();
+            string nowUTC = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
+            using (sqlConnection)
+            {
+                sqlConnection.Open();
+
+                try
+                {
+                    SqlCommand sqlCmd = new SqlCommand();
+                    sqlCmd.Connection = sqlConnection;
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.CommandText = "SELECT * FROM [UHN].[Battle] (NOLOCK) WHERE Resolved = 0";
+                    using (SqlDataReader reader = sqlCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Battle entry = new Battle();
+
+                            entry.Id = (int)reader["Id"];
+                            entry.ContainerId = (int)reader["ContainerId"];
+                            entry.OpponentBattleAssetId = (int)reader["OpponentBattleAssetId"];
+                            entry.ChallengerBattleAssetId = ReadNullParameterSafe<int?>(reader, "ChallengerBattleAssetId");
+                            entry.UPXPerSide = (int)reader["UPXPerSide"];
+                            entry.MustBattleBy = (DateTime)reader["MustBattleBy"];
+                            entry.Resolved = (bool)reader["Resolved"];
+                            entry.WinnerBattleAssetId = ReadNullParameterSafe<int?>(reader, "WinnerBattleAssetId");
+                            entry.OpponentSkills = (string)reader["OpponentSkills"];
+                            entry.ChallengerSkills = ReadNullParameterSafe<string?>(reader, "ChallengerSkills");
+
+                            expiredBattles.Add(entry);
+                        }
+                        reader.Close();
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                }
+            }
+
+            return expiredBattles;
+        }
+
+        public List<Battle> GetAllNeedingChallengers()
+        {
+            SqlConnection sqlConnection = GetSQLConnector();
+            List<Battle> expiredBattles = new List<Battle>();
+            string nowUTC = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
+            using (sqlConnection)
+            {
+                sqlConnection.Open();
+
+                try
+                {
+                    SqlCommand sqlCmd = new SqlCommand();
+                    sqlCmd.Connection = sqlConnection;
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.CommandText = "SELECT * FROM [UHN].[Battle] (NOLOCK) WHERE Resolved = 0 AND ChallengerBattleAssetId IS NULL AND MustBattleBy > '" + nowUTC + "'";
+                    using (SqlDataReader reader = sqlCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Battle entry = new Battle();
+
+                            entry.Id = (int)reader["Id"];
+                            entry.ContainerId = (int)reader["ContainerId"];
+                            entry.OpponentBattleAssetId = (int)reader["OpponentBattleAssetId"];
+                            entry.ChallengerBattleAssetId = ReadNullParameterSafe<int?>(reader, "ChallengerBattleAssetId");
+                            entry.UPXPerSide = (int)reader["UPXPerSide"];
+                            entry.MustBattleBy = (DateTime)reader["MustBattleBy"];
+                            entry.Resolved = (bool)reader["Resolved"];
+                            entry.WinnerBattleAssetId = ReadNullParameterSafe<int?>(reader, "WinnerBattleAssetId");
+                            entry.OpponentSkills = (string)reader["OpponentSkills"];
+                            entry.ChallengerSkills = ReadNullParameterSafe<string?>(reader, "ChallengerSkills");
+
+                            expiredBattles.Add(entry);
+                        }
+                        reader.Close();
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                }
+            }
+
+            return expiredBattles;
+        }
+
+        public List<Battle> GetAllBattlesResolvedByBattleAssetId(int battleAssetId)
+        {
+            SqlConnection sqlConnection = GetSQLConnector();
+            List<Battle> expiredBattles = new List<Battle>();
+            string nowUTC = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
+            using (sqlConnection)
+            {
+                sqlConnection.Open();
+
+                try
+                {
+                    SqlCommand sqlCmd = new SqlCommand();
+                    sqlCmd.Connection = sqlConnection;
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.CommandText = "SELECT * FROM [UHN].[Battle] (NOLOCK) WHERE Resolved = 1 AND ChallengerBattleAssetId IS NOT NULL AND (OpponentBattleAssetId = " + battleAssetId + " OR ChallengerBattleAssetId = " + battleAssetId + ") ORDER BY MustBattleBy DESC";
+                    using (SqlDataReader reader = sqlCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Battle entry = new Battle();
+
+                            entry.Id = (int)reader["Id"];
+                            entry.ContainerId = (int)reader["ContainerId"];
+                            entry.OpponentBattleAssetId = (int)reader["OpponentBattleAssetId"];
+                            entry.ChallengerBattleAssetId = ReadNullParameterSafe<int?>(reader, "ChallengerBattleAssetId");
+                            entry.UPXPerSide = (int)reader["UPXPerSide"];
+                            entry.MustBattleBy = (DateTime)reader["MustBattleBy"];
+                            entry.Resolved = (bool)reader["Resolved"];
+                            entry.WinnerBattleAssetId = ReadNullParameterSafe<int?>(reader, "WinnerBattleAssetId");
+                            entry.OpponentSkills = (string)reader["OpponentSkills"];
+                            entry.ChallengerSkills = ReadNullParameterSafe<string?>(reader, "ChallengerSkills");
+
+                            expiredBattles.Add(entry);
+                        }
+                        reader.Close();
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                }
+            }
+
+            return expiredBattles;
+        }
+
+        public List<Battle> GetAllNeedingApproval()
+        {
+            SqlConnection sqlConnection = GetSQLConnector();
+            List<Battle> expiredBattles = new List<Battle>();
+
+            using (sqlConnection)
+            {
+                sqlConnection.Open();
+
+                try
+                {
+                    SqlCommand sqlCmd = new SqlCommand();
+                    sqlCmd.Connection = sqlConnection;
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.CommandText = "SELECT * FROM [UHN].[Battle] (NOLOCK) WHERE Resolved = 0 AND ChallengerBattleAssetId IS NOT NULL";
+                    using (SqlDataReader reader = sqlCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Battle entry = new Battle();
+
+                            entry.Id = (int)reader["Id"];
+                            entry.ContainerId = (int)reader["ContainerId"];
+                            entry.OpponentBattleAssetId = (int)reader["OpponentBattleAssetId"];
+                            entry.ChallengerBattleAssetId = ReadNullParameterSafe<int?>(reader, "ChallengerBattleAssetId");
+                            entry.UPXPerSide = (int)reader["UPXPerSide"];
+                            entry.MustBattleBy = (DateTime)reader["MustBattleBy"];
+                            entry.Resolved = (bool)reader["Resolved"];
+                            entry.WinnerBattleAssetId = ReadNullParameterSafe<int?>(reader, "WinnerBattleAssetId");
+                            entry.OpponentSkills = (string)reader["OpponentSkills"];
+                            entry.ChallengerSkills = ReadNullParameterSafe<string?>(reader, "ChallengerSkills");
+
+                            expiredBattles.Add(entry);
+                        }
+                        reader.Close();
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                }
+            }
+
+            return expiredBattles;
+        }
+
+        public Battle GetBattleById(int battleId)
+        {
+            SqlConnection sqlConnection = GetSQLConnector();
+            Battle battle = null;
+            string nowUTC = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
+            using (sqlConnection)
+            {
+                sqlConnection.Open();
+
+                try
+                {
+                    SqlCommand sqlCmd = new SqlCommand();
+                    sqlCmd.Connection = sqlConnection;
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.CommandText = "SELECT TOP(1) * FROM [UHN].[Battle] (NOLOCK) WHERE Id = " + battleId;
+                    using (SqlDataReader reader = sqlCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            battle = new Battle();
+
+                            battle.Id = (int)reader["Id"];
+                            battle.ContainerId = (int)reader["ContainerId"];
+                            battle.OpponentBattleAssetId = (int)reader["OpponentBattleAssetId"];
+                            battle.ChallengerBattleAssetId = ReadNullParameterSafe<int?>(reader, "ChallengerBattleAssetId");
+                            battle.UPXPerSide = (int)reader["UPXPerSide"];
+                            battle.MustBattleBy = (DateTime)reader["MustBattleBy"];
+                            battle.Resolved = (bool)reader["Resolved"];
+                            battle.WinnerBattleAssetId = ReadNullParameterSafe<int?>(reader, "WinnerBattleAssetId");
+                            battle.OpponentSkills = (string)reader["OpponentSkills"];
+                            battle.ChallengerSkills = ReadNullParameterSafe<string?>(reader, "ChallengerSkills");
+                        }
+                        reader.Close();
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                }
+            }
+
+            return battle;
         }
 
         private SqlParameter AddNullParmaterSafe<T>(string parameterName, T value)

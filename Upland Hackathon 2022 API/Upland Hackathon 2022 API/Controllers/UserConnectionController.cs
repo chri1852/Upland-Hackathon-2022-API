@@ -102,6 +102,51 @@ namespace Upland_Hackathon_2022_API.Controllers
             return Ok(response);
         }
 
+        [HttpPost("BetaLogin")]
+        [AllowAnonymous]
+        public async Task<ActionResult<PostBetaLoginResponse>> BetaLogin(PostLoginRequest request)
+        {
+            PostBetaLoginResponse response = new PostBetaLoginResponse();
+            RegisteredUser registeredUser = _localRepository.GetUserByUplandUsername(request.Username);
+
+            if (registeredUser == null || registeredUser.UplandAccessToken == null)
+            {
+                if (registeredUser == null)
+                {
+                    registeredUser = new RegisteredUser();
+
+                    registeredUser.UplandUsername = request.Username;
+                    registeredUser.PasswordSalt = BuildSaltForUser(registeredUser);
+                    registeredUser.PasswordHash = GetPasswordHash(registeredUser, request.Password);
+                }
+
+                try
+                {
+                    PostUserAppAuthResponse authCode = await _uplandThirdPartyApiRepository.PostOTP();
+
+                    registeredUser.AccessCode = authCode.code;
+                    _localRepository.UpsertUser(registeredUser);
+                    registeredUser = _localRepository.GetUserByUplandUsername(request.Username);
+                    response.MustEnterCode = true;
+                    response.OTPCode = registeredUser.AccessCode;
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest("Failed Getting Auth Code");
+                }
+            }
+
+            if (!ValidatePassword(registeredUser, request.Password))
+            {
+                response.Message = "Username or Password is Incorrect";
+                return BadRequest(response);
+            }
+
+            response.Message = "Success";
+            response.AuthToken = GetEncodedToken(registeredUser);
+            return Ok(response);
+        }
+
         #region Password Validation Functions
 
         private string GetEncodedToken(RegisteredUser user)

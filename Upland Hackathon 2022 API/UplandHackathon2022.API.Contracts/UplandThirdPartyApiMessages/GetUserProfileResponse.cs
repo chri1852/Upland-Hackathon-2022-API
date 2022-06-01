@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using UplandHackathon2022.API.Contracts.Types;
 
 namespace UplandHackathon2022.API.Contracts.UplandThirdPartyApiMessages
 {
@@ -12,5 +14,7 @@ namespace UplandHackathon2022.API.Contracts.UplandThirdPartyApiMessages
         public string avatarUrl { get; set; }
         public string initialCity { get; set; }
         public string currentCity { get; set; }
+
+        public List<BattleAsset> battleAssets { get; set; }
     }
 }

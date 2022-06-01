@@ -23,6 +23,13 @@ namespace UplandHackaton2022.Api.Abstractions
         BattleAssetTraining GetBattleAssetTrainingById(int battleAssetTrainingId);
         List<BattleAssetTraining> GetAllExpiredBattleAssetTrainings();
         List<BattleAssetTraining> GetAllFinishedBattleAssetTrainings();
+        List<BattleAssetTraining> GetAllApprovedNotFinishedBattleAssetTrainings();
         int IsBattleAssetTraining(int battleAssetId);
+        int UpsertBattle(Battle battle);
+        List<Battle> GetAllUnresolvedBattles();
+        List<Battle> GetAllNeedingChallengers();
+        List<Battle> GetAllBattlesResolvedByBattleAssetId(int battleAssetId);
+        List<Battle> GetAllNeedingApproval();
+        Battle GetBattleById(int battleId);
     }
 }
