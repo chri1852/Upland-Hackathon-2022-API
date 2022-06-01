@@ -56,12 +56,10 @@ namespace UplandHackathon2022.API.Infrastructure.Authentication
 
                 if (token != null)
                 {
-                    // TODO CHANGE CLAIMS
                     List<Claim> claims = new List<Claim> {
                         new Claim("RegisteredUserId", token.RegisteredUserId.ToString()),
                         new Claim("UplandUsername", token.UplandUsername),
                         new Claim("PasswordHash", token.PasswordHash),
-                        new Claim("WebVerified", token.WebVerified.ToString())
                     };
 
                     ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, nameof(UplandHackathon2022AuthHandler));

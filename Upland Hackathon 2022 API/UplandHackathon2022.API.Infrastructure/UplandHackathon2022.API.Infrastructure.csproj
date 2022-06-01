@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -7,10 +7,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\UplandHackathon2022.API.Contracts\UplandHackathon2022.API.Contracts.csproj" />
+    <ProjectReference Include="..\UplandHackaton2022.Api.Abstractions\UplandHackaton2022.Api.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

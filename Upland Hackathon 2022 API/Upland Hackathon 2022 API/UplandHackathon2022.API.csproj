@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\UplandHackathon2022.API.Contracts\UplandHackathon2022.API.Contracts.csproj" />
     <ProjectReference Include="..\UplandHackathon2022.API.Infrastructure\UplandHackathon2022.API.Infrastructure.csproj" />
+    <ProjectReference Include="..\UplandHackaton2022.Api.Abstractions\UplandHackaton2022.Api.Abstractions.csproj" />
   </ItemGroup>
 
 

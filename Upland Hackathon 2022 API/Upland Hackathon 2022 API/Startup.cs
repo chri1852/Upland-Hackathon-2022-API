@@ -12,6 +12,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using UplandHackathon2022.API.Contracts.Constants;
 using UplandHackathon2022.API.Infrastructure.Authentication;
+using UplandHackathon2022.API.Infrastructure.Repositories;
+using UplandHackaton2022.Api.Abstractions;
 
 namespace Upland_Hackathon_2022_API
 {
@@ -33,6 +35,8 @@ namespace Upland_Hackathon_2022_API
             services.AddControllers();
 
             services
+                .AddSingleton<ILocalRepository, LocalRepository>()
+                .AddSingleton<IUplandThirdPartyApiRepository, UplandThirdPartyApiRepository>()
                 .AddSingleton(Configuration);
 
             services
