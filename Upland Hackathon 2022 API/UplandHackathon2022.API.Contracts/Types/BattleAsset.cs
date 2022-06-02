@@ -16,5 +16,6 @@ namespace UplandHackathon2022.API.Contracts.Types
         public int SissorsSkill { get; set; }
 
         public bool IsTraining { get; set; }
+        public bool IsBattling { get; set; }
     }
 }

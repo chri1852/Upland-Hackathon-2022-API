@@ -37,11 +37,12 @@ namespace Upland_Hackathon_2022_API.Controllers
             BattleMaster = _localRepository.GetUserByUplandUsername("HB5_DEV");
         }
 
-        /*
+        
         [HttpGet("TestBattle")]
         [AllowAnonymous]
         public async Task<ActionResult> TestBattle()
         {
+            /*
             RegisteredUser opponent = _localRepository.GetUserByUplandUsername("HB3_DEV");
             RegisteredUser challenger = _localRepository.GetUserByUplandUsername("HB5_DEV");
             List<BattleAsset> opponentBattleAssets = (await _thirdPartyApiRepository.GetUserNFTAssets(opponent.UplandAccessToken, 1, 100, new List<string>
@@ -66,10 +67,11 @@ namespace Upland_Hackathon_2022_API.Controllers
             await this.JoinBattle(challenger, challengerBattleAssets[0], challengerBalances.availableUpx, activeBattles[0].Id);
 
             await UpdateBattles();
-
+            */
+            await UpdateBattles();
             return Ok();
         }
-        */
+        
 
         [HttpGet("Profile")]
         [Authorize(AuthenticationSchemes = UplandHackathon2022AuthConstants.UplandHackathon2022AuthScheme)]
@@ -208,6 +210,12 @@ namespace Upland_Hackathon_2022_API.Controllers
                 try
                 {
                     EscrowContainer container = await _thirdPartyApiRepository.GetEscrowContainerById(training.ContainerId);
+
+                    if (container.assets.Any(a => a.status != "in_escrow"))
+                    {
+                        continue;
+                    }
+
                     escrowActions[0].targetEosId = container.assets.First(a => a.category == asset.AssetCategory && a.assetId == asset.AssetId).ownerEosId;
 
                     await _thirdPartyApiRepository.PostResolveEscrowContainer(training.ContainerId, escrowActions);
@@ -379,6 +387,9 @@ namespace Upland_Hackathon_2022_API.Controllers
             {
                 battleAsset.IsTraining = false;
             }
+
+            // Check if it is actively training
+            battleAsset.IsBattling = _localRepository.IsBattling(battleAsset.Id);
 
             return battleAsset;
         }
@@ -724,7 +735,7 @@ namespace Upland_Hackathon_2022_API.Controllers
                                 await this.RefundBattle(battle, container);
                             }
                         }
-                        else
+                        else if (container.assets.All(a => a.status == "in_escrow"))
                         {
                             await this.ResolveBattle(battle, container);
                         }

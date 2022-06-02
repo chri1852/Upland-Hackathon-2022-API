@@ -31,5 +31,6 @@ namespace UplandHackaton2022.Api.Abstractions
         List<Battle> GetAllBattlesResolvedByBattleAssetId(int battleAssetId);
         List<Battle> GetAllNeedingApproval();
         Battle GetBattleById(int battleId);
+        bool IsBattling(int battleAssetId);
     }
 }

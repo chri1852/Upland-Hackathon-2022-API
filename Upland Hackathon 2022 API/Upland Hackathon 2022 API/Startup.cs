@@ -56,7 +56,8 @@ namespace Upland_Hackathon_2022_API
                         "http://localhost:3000",
                         "https://localhost:44337",
                         "https://*.hackup.land",
-                        "https://*.hackup.land")
+                        "https://*.hackup.land",
+                        "https://*.uplandoptimizer.com")
                         .SetIsOriginAllowedToAllowWildcardSubdomains()
                         .AllowAnyHeader()
                         .AllowAnyMethod();

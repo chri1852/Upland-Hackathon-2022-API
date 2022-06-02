@@ -975,6 +975,46 @@ namespace UplandHackathon2022.API.Infrastructure.Repositories
             return expiredBattles;
         }
 
+        public bool IsBattling(int battleAssetId)
+        {
+            SqlConnection sqlConnection = GetSQLConnector();
+            List<Battle> expiredBattles = new List<Battle>();
+            string nowUTC = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+            int isBattling = -1;
+
+            using (sqlConnection)
+            {
+                sqlConnection.Open();
+
+                try
+                {
+                    SqlCommand sqlCmd = new SqlCommand();
+                    sqlCmd.Connection = sqlConnection;
+                    sqlCmd.CommandType = CommandType.Text;
+                    sqlCmd.CommandText = "SELECT TOP(1) Id FROM [UHN].[Battle] (NOLOCK) WHERE Resolved = 0  AND (OpponentBattleAssetId = " + battleAssetId + " OR ChallengerBattleAssetId = " + battleAssetId + ")";
+                    using (SqlDataReader reader = sqlCmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            isBattling = (int)reader["Id"];
+                        }
+                        reader.Close();
+                    }
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    sqlConnection.Close();
+                }
+            }
+
+            return isBattling != -1;
+        }
+
+
         public List<Battle> GetAllBattlesResolvedByBattleAssetId(int battleAssetId)
         {
             SqlConnection sqlConnection = GetSQLConnector();
