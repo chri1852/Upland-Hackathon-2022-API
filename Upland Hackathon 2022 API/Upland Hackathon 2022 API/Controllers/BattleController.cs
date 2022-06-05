@@ -369,7 +369,7 @@ namespace Upland_Hackathon_2022_API.Controllers
                         battleAsset.PaperSkill = 60;
                         break;
                     case "structornmt":
-                        battleAsset.SissorsSkill = 60;
+                        battleAsset.RockSkill = 60;
                         break;
                 }
 
@@ -460,9 +460,9 @@ namespace Upland_Hackathon_2022_API.Controllers
                 battleAssetTraining.ContainerId = trainingContainer.id;
                 _localRepository.UpsertBattleAssetTraining(battleAssetTraining);
             }
-            catch
+            catch (Exception ex)
             {
-                throw new Exception("Failed Initializing Training");
+                throw new Exception("Failed Initializing Training: " + ex.Message);
             }
 
             return battleAssetTraining;
@@ -642,9 +642,9 @@ namespace Upland_Hackathon_2022_API.Controllers
 
                 _localRepository.UpsertBattle(battle);
             }
-            catch
+            catch (Exception ex)
             {
-                throw new Exception("Failed Initializing Battle");
+                throw new Exception("Failed Initializing Battle: " + ex.Message);
             }
         }
 
@@ -701,9 +701,9 @@ namespace Upland_Hackathon_2022_API.Controllers
 
                 _localRepository.UpsertBattle(battle);
             }
-            catch
+            catch (Exception ex)
             {
-                throw new Exception("Failed Joining Battle");
+                throw new Exception("Failed Joining Battle: " + ex.Message);
             }
         }
 

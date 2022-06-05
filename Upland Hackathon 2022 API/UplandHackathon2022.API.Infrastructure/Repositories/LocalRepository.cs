@@ -939,7 +939,7 @@ namespace UplandHackathon2022.API.Infrastructure.Repositories
                     SqlCommand sqlCmd = new SqlCommand();
                     sqlCmd.Connection = sqlConnection;
                     sqlCmd.CommandType = CommandType.Text;
-                    sqlCmd.CommandText = "SELECT * FROM [UHN].[Battle] (NOLOCK) WHERE Resolved = 0 AND ChallengerBattleAssetId IS NULL AND MustBattleBy > '" + nowUTC + "'";
+                    sqlCmd.CommandText = "SELECT * FROM [UHN].[Battle] (NOLOCK) WHERE Resolved = 0 AND MustBattleBy > '" + nowUTC + "'";
                     using (SqlDataReader reader = sqlCmd.ExecuteReader())
                     {
                         while (reader.Read())
